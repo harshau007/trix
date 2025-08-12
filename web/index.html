@@ -1,0 +1,75 @@
+<!-- web/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TriX Gaming Interface</title>
+  </head>
+  <body>
+    <h1>TriX Gaming Platform</h1>
+    <p>
+      <strong>Status:</strong> <span id="status">Not Connected</span><br />
+      <strong>Your Address:</strong> <span id="walletAddress">N/A</span><br />
+      <strong>GT Balance:</strong> <span id="gtBalance">0</span> GT<br />
+      <strong>USDT Balance:</strong> <span id="usdtBalance">0</span> mUSDT
+    </p>
+    <button id="connectButton">Connect Wallet</button>
+    <hr />
+
+    <h2>Operator Actions (Backend API)</h2>
+    <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px">
+      <h3>Create Match</h3>
+      <input type="text" id="p1Address" placeholder="Player 1 Address" />
+      <input type="text" id="p2Address" placeholder="Player 2 Address" />
+      <input
+        type="number"
+        id="createStakeAmount"
+        placeholder="Stake Amount (GT)"
+      />
+      <button id="createMatchButton">Create Match</button>
+    </div>
+    <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px">
+      <h3>Submit Result</h3>
+      <input type="text" id="resultMatchId" placeholder="Match ID" />
+      <input type="text" id="winnerAddress" placeholder="Winner Address" />
+      <button id="submitResultButton">Submit Result</button>
+    </div>
+
+    <hr />
+
+    <h2>Player Actions (On-Chain)</h2>
+    <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px">
+      <h3>Buy GameTokens (GT)</h3>
+      <input type="number" id="usdtAmount" placeholder="Amount in mUSDT" />
+      <button id="buyGTButton">Buy GT</button>
+    </div>
+    <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px">
+      <h3>Stake for Match</h3>
+      <input
+        type="text"
+        id="stakeMatchId"
+        placeholder="Match ID to Stake For"
+      />
+      <button id="stakeButton">Stake</button>
+    </div>
+
+    <hr />
+    <h2>Logs</h2>
+    <pre
+      id="logs"
+      style="
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 200px;
+        overflow-y: scroll;
+      "
+    ></pre>
+
+    <!-- Ethers.js library from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.1/ethers.umd.min.js"></script>
+    <!-- Your application logic -->
+    <script src="app.js"></script>
+  </body>
+</html>
