@@ -79,6 +79,7 @@ export class BlockchainService implements OnModuleInit {
 
   async createMatch(p1: string, p2: string, stake: string): Promise<string> {
     if (!ethers.isAddress(p1) || !ethers.isAddress(p2)) {
+      console.log(p1, p2)
       throw new Error('Invalid player address');
     }
     const stakeAmount = ethers.parseUnits(stake, 18); // GT has 18 decimals
