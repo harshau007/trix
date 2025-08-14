@@ -5,8 +5,8 @@ import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "TriX Tic-Tac-Toe",
-  description: "A blockchain-based Tic-Tac-Toe game with crypto stakes",
+  title: "TriX 2048",
+  description: "A blockchain-based 2048 game with crypto stakes",
   generator: "v0.app",
 }
 
