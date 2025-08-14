@@ -1,60 +1,103 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Slider } from "@/components/ui/slider"
-import { useGameStore } from "@/lib/store"
-import { Loader2, Search, X } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useGameStore } from "@/lib/store";
+import { Loader2, Search, X } from "lucide-react";
+import { useState } from "react";
 
 export function FindMatchCard() {
-  const { user, matchmaking, setStakeAmount, findMatch, cancelMatchmaking } = useGameStore()
-  const [localStake, setLocalStake] = useState([matchmaking.stakeAmount])
+  const { user, matchmaking, setStakeAmount, findMatch, cancelMatchmaking } =
+    useGameStore();
+  const [stakeInput, setStakeInput] = useState(
+    matchmaking.stakeAmount.toString()
+  );
+  const [error, setError] = useState("");
 
-  const handleStakeChange = (value: number[]) => {
-    setLocalStake(value)
-    setStakeAmount(value[0])
-  }
+  const handleStakeChange = (value: string) => {
+    setStakeInput(value);
+    setError("");
 
-  const isSearching = matchmaking.status === "SEARCHING"
+    const numValue = Number(value);
+    if (value && !isNaN(numValue) && numValue > 0) {
+      if (numValue > Number(user.gtBalance)) {
+        setError(`Insufficient GT balance. You have ${user.gtBalance} GT`);
+      } else {
+        setStakeAmount(numValue);
+      }
+    }
+  };
+
+  const canFindMatch = () => {
+    const numValue = Number(stakeInput);
+    return (
+      user.isConnected &&
+      !isNaN(numValue) &&
+      numValue > 0 &&
+      numValue <= Number(user.gtBalance) &&
+      !error
+    );
+  };
+
+  const isSearching = matchmaking.status === "SEARCHING";
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle>Find a Match</CardTitle>
-        <CardDescription>Set your stake amount and find an opponent</CardDescription>
+        <CardDescription>
+          Set your stake amount and find an opponent
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {!isSearching ? (
           <>
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Stake Amount</label>
-                <div className="px-3">
-                  <Slider
-                    value={localStake}
-                    onValueChange={handleStakeChange}
-                    max={100}
-                    min={10}
-                    step={10}
-                    className="w-full"
-                  />
-                </div>
+                <label className="text-sm font-medium">Stake Amount (GT)</label>
+                <Input
+                  type="number"
+                  value={stakeInput}
+                  onChange={(e) => handleStakeChange(e.target.value)}
+                  placeholder="Enter stake amount"
+                  min="1"
+                  max={user.gtBalance}
+                  className="text-center font-mono"
+                />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>10 GT</span>
-                  <span className="font-mono">{localStake[0]} GT</span>
-                  <span>100 GT</span>
+                  <span>Available: {user.gtBalance} GT</span>
+                  {error && <span className="text-red-500">{error}</span>}
                 </div>
               </div>
             </div>
 
-            <Button onClick={findMatch} disabled={!user.isConnected} className="w-full" size="lg">
+            <Button
+              onClick={findMatch}
+              disabled={!canFindMatch()}
+              className="w-full"
+              size="lg"
+            >
               <Search className="w-4 h-4 mr-2" />
               Find Match
             </Button>
 
             {!user.isConnected && (
-              <p className="text-sm text-muted-foreground text-center">Connect your wallet to start playing</p>
+              <p className="text-sm text-muted-foreground text-center">
+                Connect your wallet to start playing
+              </p>
+            )}
+
+            {user.isConnected && Number(user.gtBalance) === 0 && (
+              <p className="text-sm text-muted-foreground text-center">
+                You need GT tokens to play. Buy some GT first!
+              </p>
             )}
           </>
         ) : (
@@ -63,8 +106,14 @@ export function FindMatchCard() {
               <Loader2 className="w-5 h-5 animate-spin" />
               <span>Searching for opponent...</span>
             </div>
-            <p className="text-sm text-muted-foreground">Stake: {matchmaking.stakeAmount} GT</p>
-            <Button onClick={cancelMatchmaking} variant="outline" className="w-full bg-transparent">
+            <p className="text-sm text-muted-foreground">
+              Stake: {matchmaking.stakeAmount} GT
+            </p>
+            <Button
+              onClick={cancelMatchmaking}
+              variant="outline"
+              className="w-full bg-transparent"
+            >
               <X className="w-4 h-4 mr-2" />
               Cancel Search
             </Button>
@@ -72,5 +121,5 @@ export function FindMatchCard() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

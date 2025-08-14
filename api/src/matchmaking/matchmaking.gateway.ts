@@ -36,14 +36,19 @@ export class MatchmakingGateway
     payload: { address: string; stake: number },
   ): void {
     const { address, stake } = payload;
-    
     for (const stakeAmount in matchmakingQueue) {
-        const alreadyInQueue = matchmakingQueue[stakeAmount].some(socket => socket.data.address === address);
-        if (alreadyInQueue) {
-            console.log(`Player ${address} is already in a queue. Ignoring join request.`);
-            client.emit('error', { message: 'You are already in the matchmaking queue.' });
-            return;
-        }
+      const alreadyInQueue = matchmakingQueue[stakeAmount].some(
+        (socket) => socket.data.address === address,
+      );
+      if (alreadyInQueue) {
+        console.log(
+          `Player ${address} is already in a queue. Ignoring join request.`,
+        );
+        client.emit('error', {
+          message: 'You are already in the matchmaking queue.',
+        });
+        return;
+      }
     }
 
     console.log(
@@ -70,6 +75,41 @@ export class MatchmakingGateway
     }
   }
 
+  @SubscribeMessage('scoreUpdate')
+  handleScoreUpdate(
+    client: Socket,
+    payload: {
+      matchId: string;
+      player: string;
+      score: number;
+      isGameOver: boolean;
+    },
+  ) {
+    console.log('Score update received:', payload);
+    const room = `match-${payload.matchId}`;
+    client.to(room).emit('scoreUpdate', payload);
+  }
+
+  @SubscribeMessage('gameEnded')
+  handleGameEnded(
+    client: Socket,
+    payload: { matchId: string; winner: string; transactionHash: string },
+  ) {
+    console.log('Game ended:', payload);
+    const room = `match-${payload.matchId}`;
+    this.server.to(room).emit('gameEnded', payload);
+  }
+
+  @SubscribeMessage('playerQuit')
+  handlePlayerQuit(
+    client: Socket,
+    payload: { matchId: string; player: string },
+  ) {
+    console.log('Player quit:', payload);
+    const room = `match-${payload.matchId}`;
+    client.to(room).emit('playerQuit', payload);
+  }
+
   private removeClientFromQueue(client: Socket) {
     for (const stake in matchmakingQueue) {
       matchmakingQueue[stake] = matchmakingQueue[stake].filter(
@@ -86,15 +126,16 @@ export class MatchmakingGateway
       const player2Socket = queue.shift() as Socket;
 
       if (player1Socket.data.address === player2Socket.data.address) {
-        console.log("Attempted to match a player with themselves. Re-queuing one player.");
+        console.log(
+          'Attempted to match a player with themselves. Re-queuing one player.',
+        );
         queue.unshift(player2Socket);
-        return; 
+        return;
       }
-      
+
       console.log(`Found a valid match for stake ${stake}!`);
 
       const matchId = uuidv4();
-
       const room = `match-${matchId}`;
       player1Socket.join(room);
       player2Socket.join(room);
